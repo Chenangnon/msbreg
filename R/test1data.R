@@ -1,0 +1,74 @@
+#' Test Datasets
+#'
+#' Simulated data for testing/demonstrating functions
+#' in the package \code{msbreg}.
+#'
+#' @details
+#' The dataset \code{test1data} has 1000 rows and 5 columns.
+#' The outcome \code{y} is a binomial response,
+#' simulated as a Multistage Binomial (MSB) response
+#' using other 4 variables.
+#'
+#' The success probability for the \eqn{i}th row is given by:
+#'
+#' \eqn{\mu_i = \lambda \times \mu_{i1} \times \mu_{i2}}
+#'
+#' where \eqn{\lambda} is the theoretical maximum success probability,
+#' \eqn{\mu_{ij}} is the success probability at stage \eqn{j} (\eqn{j = 1,2}):
+#'
+#' \describe{
+#' \item{Stage \eqn{j = 1}}{ has an offset \code{off1} and one numerical predictor \code{x1};}
+#'
+#' \item{Stage \eqn{j = 2}}{ has one numerical predictor\code{x2};}
+#' }
+#'
+#' The vector of individual success probabilities can be extracted
+#' as \code{attr(test1data$y, "mu")} and the corresponding vector of
+#' model parameters as \code{attr(test1data$y, "theta")}.
+#' The column \code{test1data$Total} contains the number of trials per subject.
+#'
+#' See section **Examples** for MSB model building.
+#'
+#' @docType data
+#'
+#' @usage data(test1data)
+#'
+#' @format An object of class \code{"data.frame"}.
+#'
+#' @keywords datasets
+#'
+#' @source Simulated
+#'
+#' @author Chenangnon Tovissode \email{ctovissode@@uidaho.edu}
+# @references \url{blah_blah.com}
+#'
+#' @examples
+#' data(test1data)
+#' head(test1data)
+#'
+#' #* MSB model frame
+#' mframe <- msbm.frame (formula = y/Total ~ x1 + offset(off1) | x2,
+#'                       alpha.formula = ~ 0,  # minimum probability set to zero
+#'                       lambda.formula = ~ 1, # maximum probability is constant, allowed to be < 1
+#'                       weights = Total,
+#'                       data = test1data, frames = TRUE)
+#'
+#' mframe
+#'
+#' #* Parameter vector used to simulate the response
+#' parvec <- attr(test1data$y,"theta")
+#' parvec
+#'
+#' #* Fisher Information Matrix
+#' fisher.matrix(mframe, coefficients = parvec, link = "logit")
+#'
+# \donttest{head(test1data)}
+"test1data"
+
+#
+#
+# ## from a package top-level source directory
+# paths <- sort(Sys.glob(c("data/*.rda", "data/*.RData")))
+# (res <- checkRdaFiles(paths))
+#
+#

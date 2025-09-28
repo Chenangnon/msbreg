@@ -1,0 +1,118 @@
+#' @keywords internal
+#' @details
+#'
+#' Package:	msbreg
+#'
+#' Type:	  Package
+#'
+#' Version:	0.1.0
+#'
+#' Date:	2024-12-15
+#'
+#' License:	GNU General Public License Version 3 or later
+#'
+#' The Multi-Stage Binomial (MSB) regression model
+#' \insertCite{tovissode2025multistage}{msbreg} is an extension
+#' of the Traditional Binomial (TB) model, that is, the
+#' generalized linear model based on the \link[stats]{binomial}
+#' error distribution for the response variable. Recall that the TB
+#' model represents the success probability \eqn{\mu_i} of the
+#' binomial response for the \eqn{i}th individual as:
+#'
+#'    \code{(1)}  \eqn{\mu_i = h(\eta_i)}
+#'
+#' where \eqn{h} is a binomial link function (a map
+#' \eqn{\mathbb{R} \to [0, 1]}), \eqn{\eta_i = \beta^{\top}x_i} with
+#' \eqn{\beta} the vector of regression parameters (intercept and slopes),
+#' and \eqn{x_i} is the vector of individual explanatory variables,
+#' covariate, and/or confounders. If the \eqn{i}th individual participated
+#' in \eqn{n_i} (\eqn{n_i \geq 1}) independent trials, the binomial
+#' response \eqn{Y_i} is distributed as the sum of \eqn{n_i} independent
+#' Bernoulli variables, each with success probability \eqn{\mu_i}:
+#'
+#'    \code{(2)}  \eqn{Y_i \sim \mathcal{B}in(n_i, \mu_i)}.
+#'
+#' The MSB model stems for processes where for each trial, many discrete
+#' events occur, but only the success of all the discrete event is observable
+#' per trial \insertCite{tovissode2025multistage}{msbreg}. In this case, the equation \eqn{Y_i \sim \mathcal{B}in(n_i, \mu_i)}
+#' still holds, but the success probability \eqn{\mu_i} of each trial depends
+#' on the success probabilities of all the discrete events. Under the assumption
+#' that the discrete steps are (sequentially) independent (note that any
+#' dependence structure can always be reduced to some sequential conditional
+#' independence), a general form for the success probability \eqn{\mu_i} is:
+#'
+#'   \code{(3)}  \eqn{\mu_i = \lambda_i \left[\alpha_i + (1 - \alpha_i) \prod_{j=1}^{q} \mu_{ij} \right]}
+#'
+#' where \eqn{\lambda_i} represent the theoretical maximum for \eqn{\mu_i},
+#' \eqn{\alpha_i} is such that \eqn{\mu_i} has minimum \eqn{\alpha_i\lambda_i},
+#' \eqn{q} is the number of stages for which some predictors are available,
+#' \eqn{\mu_{ij} = h(\eta_{ij})} is the success probability at the \eqn{j}th
+#' stage, with \eqn{\eta_{ij} = \beta_j^{\top}x_{ij}} for some predictors
+#' \eqn{x_{ij}} available for stage \eqn{j} and the related vector \eqn{\beta_j}
+#' of regression parameters.
+#'
+#' Notably, MSB modeling applies to situations where binary data is scarce,
+#' that is, the individual steps of the process generating the data are
+#' unobservable, but *we are aware* of some stages, each related to some
+#' measurable aspects of the whole process (predictors per known stage).
+#' The MSB model framework targets both the estimation of the likelihood of
+#' the overall event (all steps succeed) as a whole (as in the observed data)
+#' and learning some of the discrete steps that lead to the observed data.
+#' This modeling framework interetingly nests the TB model, and
+#' the Zero-Inflated Binomial (ZIB) model \insertCite{hall2000zero}{msbreg}
+#' which has become popular for handling datasets with a large proportion of
+#' zeros as compared to ones
+#' \insertCite{diop2011maximum}{msbreg}.
+# \insertCite{pho2024goodness,diallo2017asymptotic,diop2016simulation,diop2011maximum}{msbreg}.
+#'
+#' In such scarce but structured data situations, the use of the MSB model
+#' based on \code{(3)} does not assume that one knows all the discrete stages
+#' of the actual data generation process. Indeed, the inclusion of \eqn{\lambda_i}
+#' (theoretical maximum for \eqn{\mu_i}) is motivated by the possibility of
+#' some unknown (or known but unmeasured) stages that significantly affect the
+#' overall event: \eqn{\lambda_i} accounts for the effects of
+#' conditioning on some experimental or observational conditions, and/or
+#' marginalizing (averaging) over some unmeasured confounders.
+#' In other words, \eqn{\lambda_i} captures the *unknown*, as related to
+#' missing stages and/or predictors or covariates.
+#' The parameter \eqn{\alpha_i} (which allows a minimum \eqn{\mu_i} above zero)
+#' mirrors the role of \eqn{\lambda_i} when modeling the absence of events
+#' instead of the presence.
+#'
+#' The MSB modelling functions provided here allow error-prone predictors.
+#' When predictors prone to measurement errors are involved, each factor
+#' \eqn{\mu_{ij} = h(\eta_{ij})} in \code{(3)} is averaged over the distribution
+#' of the measurement errors in stage \eqn{j}. The implementation uses
+#' conjugate measurement error distribution by default, that is, the
+#' measurement error distribution is chosen so that the averaging
+#' mechanism yields an expression of the form
+#' \eqn{\mu_{ij} = h(a + b * \eta_{ij})} where \eqn{a} and \eqn{b} are some
+#' reals and \eqn{\eta_{ij}} is the linear predictor calculated with error-prone
+#' predictors. But the normal distribution is available as an alternative
+#' measurement error distribution.
+#'
+#' @seealso The main user-level function is \link[msbreg]{msbreg}.
+#' It wraps \link[msbreg]{msbm.frame} which provides a friendly user-interface
+#' for model specification and design matrix building, and
+#' \link[msbreg]{msbm.fit} which is the default fitter.
+#' Model summary and plotting is available via \link[msbreg]{summary.msbm}
+#' and \link[msbreg]{courbe} for instance.
+#' Profile log-likelihood plot for \eqn{\lambda} is provided by
+#' \link[msbreg]{profilelambda}.
+#'
+#' Bootstrapping and more general simulations can be run on MSB model fits with
+#' minimum coding requirement using the functions \link[msbreg]{bootfit.msbm},
+#' \link[msbreg]{MCmsbm} and \link[msbreg]{simulate.msbm}.
+#'
+#' @note
+#' Some functions or methods in this package are still experimental.
+#' See the documentation related to each function/method.
+#'
+#' @references
+#' \insertAllCited{}
+#'
+"_PACKAGE"
+
+## usethis namespace: start
+## usethis namespace: end
+NULL

@@ -1,0 +1,72 @@
+#' Simulations Results
+#'
+#' Results of Monte Carlo simulations on a Two-Stage Binomial Model (tsbm)
+#' using the function \link[msbreg]{MCmsbm}.
+#'
+#' @details
+#' The object \code{tsbmmcrun} is the result from running the
+#' following simulation using \link[msbreg]{MCmsbm}:
+#'
+#' #Generate some data (fixed predictors) for the simulations
+#'
+#' set.seed(159);
+#' mcdf <- data.frame (x1 = rexp(1000, 0.5), x2 = rnorm(1000))
+#'
+#' mcdf$y <- sim.msb (formula = ~ x1 | x2, data = mcdf, link = "probit",
+#'                    theta = c(3, -1, 3, -1, 1.6449), seed = NULL)$y
+#'
+#'
+#' #Fit one model
+#'
+#' msbfit <- msbreg(formula = y ~ x1 | x2,
+#'                  link = 'probit', data = mcdf,
+#'                  criterion = 'MLJ', unit.lambda = FALSE)
+#'
+#' summary (msbfit)
+#'
+#'
+#' #Run nsim = 1000 MC simulations: this takes about 20 minutes
+#'
+#' tsbmmcrun <- MCmsbm (msbm = msbfit, theta = c(3, -1, 3, -1, 1.6449), nsim = 1000, seed = 1)
+#'
+#' @docType data
+#'
+#' @usage data(tsbmmcrun)
+#'
+#' @importFrom utils data
+#'
+#' @format An object of class \code{"msbm.sim"}.
+#'
+#' @keywords datasets
+#'
+#' @source Simulated
+#'
+#' @author Chenangnon Tovissode \email{ctovissode@@uidaho.edu}
+# @references \url{blah_blah.com}
+#'
+#' @seealso \link[msbreg]{MCmsbm} to run Monte Carlo experiments
+#' on \code{"msbm"} class objects returned by \link[msbreg]{msbreg}.
+#'
+#' @examples
+#' data(tsbmmcrun)
+#'
+#' #* Summary of saved statistics
+#' tsbmmcrun
+#'
+#' #* Compute performance measures (relative bias and root mean square error)
+#' Table = data.frame(Truth = c(3, -1, 3, -1, 1.6449),
+#'                    Mean = colMeans(tsbmmcrun$estimates[,1:5]))
+#' Table$`bias (%)` <- 100 * (Table$Mean - Table$Truth) / abs(Table$Truth)
+#' Table$SD <- colSds(tsbmmcrun$estimates[,1:5])
+#' Table$`rrmse (%)` <- 100 * sqrt(Table$SD^2 + (Table$Mean - Table$Truth)^2) /
+#'                       abs(Table$Truth)
+#' Table$Mean.se = colMeans(tsbmmcrun$estimates[,6:10])
+#' Table$`bias.se (%)` <- 100 * (Table$Mean.se - Table$SD) / abs(Table$SD)
+#'
+#' print(Table, digits = 4)
+"tsbmmcrun"
+
+# save(tsbmmcrun, file = "/Users/ctovissode/msbreg/data/tsbmmcrun.rda", version = 2,
+#      compress = 'xz', compression_level = 9)
+
+# Used the same for 'tsbmmcrun1' except unit.lambda = TRUE

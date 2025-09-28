@@ -1,0 +1,198 @@
+#' Simulate Multistage Binomial Responses
+#'
+#' Simulate a vector of responses from the distribution corresponding
+#' to the response in a Multistage Binomial (MSB) model, given a vector
+#' of model parameters (see section **Note** for an introduction
+#' to the MSB model).
+#'
+#' @param formula,input.me,stage.me,alpha.formula,lambda.formula objects of
+#' class \code{formula} describing the MSB model structure. The arguments
+#' are passed to \link[msbreg]{msbm.frame}. See documentation therein.
+#'
+#' @param data,weights,sample.weights,subset,na.action additional
+#' arguments passed to \link[msbreg]{msbm.frame}.
+#'
+#' @param link a \code{"link"} class object, or a character or a function
+#' that can be used to obtain such an object.
+#' Passed to \link[msbreg]{simulate.msbm}.
+#'
+#' @param theta numeric vector of model parameters. Note that \code{theta}
+#' is a required argument, and must be of the same length as the
+#' \code{$parnames} component of the \code{"msbm.frame"} object generated
+#' by the set of all previous arguments.
+#'
+#' @param nsim,seed,... same as for the default method (\link[stats]{simulate}).
+#'
+#' @aliases sim.msb
+#' @export sim.msbdata
+#' @export sim.msb
+#'
+#' @details
+#' This function simply wraps \link[msbreg]{msbm.frame} to generate a
+#' \code{"msbm.frame"} class object and \link[msbreg]{simulate.msbm}
+#' to simulate the response.
+#'
+#' \code{sim.msb} is a simple alias for \code{sim.msbdata}.
+#'
+#' @return a list with components:
+#'
+#' \describe{
+#' \item{\code{y}}{ the output from \link[msbreg]{simulate.msbm.frame}, i.e.,
+#' a numeric vector when \code{nsim = 1} and a numeric \code{"matrix"} class
+#' object (\code{nsim} columns) when \code{nsim > 1};}
+#' \item{\code{frame}}{ the output from \link[msbreg]{msbm.frame},
+#' a \code{"msbm.frame"} class object;}
+#' \item{\code{call}}{ the matched call.}
+#' }
+#'
+#' @seealso \link[msbreg]{simulate.msbm} for \link[stats]{simulate} methods
+#' for classes \code{"msbm"} and \code{"msbm.frame"}.
+#'
+#' @note
+#' The Multi-Stage Binomial (MSB) regression model is an extension
+#' of the traditional One-Stage Binomial (OSB) model, that is, the
+#' Generalized Linear Model (GLM) based on the \link[stats]{binomial}
+#' error distribution for the response variable. Recall that the OSB
+#' is represented using the success probability \eqn{\mu_i} of the
+#' binomial response for the \eqn{i}th individual as:
+#'
+#'    \code{(1)}  \eqn{\mu_i = h(\eta_i)}
+#'
+#' where \eqn{h} is a binomial link function (a map
+#' \eqn{\mathbb{R} \to [0, 1]}), \eqn{\eta_i = \beta^{\top}x_i} with
+#' \eqn{\beta} the vector of regression parameters (intercept and slopes),
+#' and \eqn{x_i} is the vector of individual explanatory variables,
+#' covariate, and/or confounders. If the \eqn{i}th individual participated
+#' in \eqn{n_i} (\eqn{n_i \geq 1}) independent trials, the binomial
+#' response \eqn{Y_i} is distributed as the sum of \eqn{n_i} independent
+#' Bernoulli variables, each with success probability \eqn{\mu_i}:
+#'
+#'    \code{(2)}  \eqn{Y_i \sim \mathcal{B}in(n_i, \mu_i)}.
+#'
+#' The MSB model stems for processes where for each trial, many discrete
+#' events occur, but only the success of all the discrete event is observable
+#' per trial. In this case, the equation \eqn{Y_i \sim \mathcal{B}in(n_i, \mu_i)}
+#' still holds, but the success probability \eqn{\mu_i} of each trial depends
+#' on the success probabilities of all the discrete events. Under the assumption
+#' that the discrete steps are independent (note that any dependence structure
+#' can always be reduced to some sequential conditional independence),
+#' a general form for the success probability \eqn{\mu_i} is:
+#'
+#'   \code{(3)}  \eqn{\mu_i = \lambda_i \left[\alpha_i + (1 - \alpha_i) \prod_{j=1}^{q} \mu_{ij} \right]}
+#'
+#' where \eqn{\lambda_i} represent the theoretical maximum for \eqn{\mu_i},
+#' \eqn{\alpha_i} is such that \eqn{\mu_i} has minimum \eqn{\alpha_i\lambda_i},
+#' \eqn{q} is the number of stages for which some predictors are available,
+#' \eqn{\mu_{ij} = h(\eta_{ij})} is the success probability at the \eqn{j}th
+#' stage, with \eqn{\eta_{ij} = \beta_j^{\top}x_{ij}} for some predictors
+#' \eqn{x_{ij}} available for stage \eqn{j} and the related vector \eqn{\beta_j}
+#' of regression parameters.
+#'
+#' Notably, MSB modeling applies to situations where binary data is scarce,
+#' that is, the individual steps of the process generating the data are
+#' unobservable, but *we are aware* of some stages, each related to some
+#' measurable aspects of the whole process (predictors per known stage).
+#' The MSB model framework targets both the estimation of the likelihood of
+#' the overall event (all steps succeed) as a whole (as in the observed data)
+#' and learning some of the discrete steps that lead to the observed data.
+#' This modeling framework interetingly nests the traditional OSB model, and
+#' the Zero-Inflated Binomial (ZIB) model \insertCite{hall2000zero}{msbreg}
+#' which has become popular for handling datasets with a large proportion of
+#' zeros as compared to ones
+#' \insertCite{pho2024goodness,diallo2017asymptotic,diop2016simulation,diop2011maximum}{msbreg}.
+#'
+#' In such scarce but structured data situations, the use of the MSB model
+#' based on \code{(3)} does not assume that one knows all the discrete stages
+#' of the actual data generation process. Indeed, the inclusion of \eqn{\lambda_i}
+#' (theoretical maximum for \eqn{\mu_i}) is motivated by the possibility of
+#' some unknown (or known but unmeasured) stages that significantly affect the
+#' overall event: \eqn{\lambda_i} captures the effects of
+#' conditioning on some experimental or observational conditions, and/or
+#' marginalizing (averaging) over some unmeasured confounders.
+#' In other words, \eqn{\lambda_i} captures the *unknown*, as related to
+#' missing stages and/or predictors or covariates.
+#' The parameter \eqn{\alpha_i} (which allows a minimum \eqn{\mu_i} above zero)
+#' mirrors the role of \eqn{\lambda_i} when modeling the absence of events
+#' instead of the presence.
+#'
+#' @examples
+#' ##* Simulate predictors
+#' set.seed(167)
+#' df <- data.frame(x1 = rexp(1000, 0.5),      # First continuous predictor
+#'                  x2 = rnorm(1000),          # Second continuous predictor
+#'                  x3 = rpois(1000, 5),       # Numeric, but discrete predictor
+#'                  f1 = rep(c('a', 'b', 'c'), # Factor with three levels
+#'                           length.out = 1000))
+#'
+#' ##* Generate a response vector using the predictors
+#' #   considering two stages
+#' mframe <- sim.msbdata (formula = ~ x1 + f1 | x2 + x3,
+#'                        data = df,
+#'                        link = "probit",
+#'                        theta = c(3, -1, 0, 0.5, 3, -1, -0.5, 1.7),
+#'                        seed = NULL)
+#'
+#' mframe$frame # model frame
+#' summary(mframe$y) # binary response
+#'
+#' # Add the simulated response to the dataset
+#' df$bin <- mframe$y
+#'
+#' # Simulate error-prone predictors
+#' df$SDx1 <- abs(rnorm(1000, sd = 0.5))
+#' df$SDx2 <- abs(rnorm(1000, sd = 0.5))
+#' df$x1err <- rnorm(n = 1000, mean = df$x1, sd = df$SDx1)
+#' df$x2err <- rnorm(n = 1000, mean = df$x2, sd = df$SDx2)
+#df$x1err <- df$x1 + rbridge(n = 1000, scale = 1/(3*df$SDx1 / (pi^2) + 1))
+#df$x2err <- df$x2 + rbridge(n = 1000, scale = 1/(3*df$SDx2 / (pi^2) + 1))
+#'
+#' ##* Fit the model, considering the error-prone predictors
+#' MSBfit <- msbreg(formula = bin ~ x1err + f1| x2err + x3,
+#'                  input.me = list(x1err = ~ SDx1,
+#'                                  x2err = ~ SDx2),
+#'                  data = df,
+#'                  link = "probit",
+#'                  criterion = "ML")
+#'
+#' summary (MSBfit)
+#' # Compare the coefficient estimates to the true
+#' # coefficients: (3, -1, 0, 0.5, 3, -1, -0.5, 1.7)
+#'
+sim.msbdata <- function (formula,
+                         input.me = list(),
+                         stage.me = NULL,
+                         alpha.formula = ~ 0,
+                         lambda.formula = ~ 1,
+                         link = "logit",
+                         data = environment(formula),
+                         weights = NULL, sample.weights = NULL,
+                         subset = NULL, na.action = stats::na.omit,
+                         theta, nsim = 1, seed = NULL, ...) {
+  stopifnot(nsim >= 1)
+  stopifnot(!missing(theta))
+
+  #* Save the call
+  mcall <- match.call()
+
+  #* Get Binomial link function
+  eval(get.linkfun())
+
+  #* Build the "msbm.frame",
+  eval(get_build_mf())
+
+  if (length(theta) != length(mf$parnames)) {
+    stop(paste0("length(theta) == ", length(mf$parnames), " is required"))
+  }
+
+  y <- simulate.msbm.frame(object = mf,
+                           nsim = nsim,
+                           seed = seed,
+                           theta = theta,
+                           link = link, ...)
+
+  return(list(y = y,
+              frame = mf,
+              mcall = mcall))
+}
+
+sim.msb <- sim.msbdata
