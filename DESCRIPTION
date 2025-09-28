@@ -1,0 +1,28 @@
+Package: msbreg
+Type: Package
+Title: Multistage Binomial Regression
+Version: 0.1.0
+Authors@R: 
+    c(person("Chenangnon", "Tovissode", , "ctovissode@uidaho.edu", role = c("aut", "cre")),
+    person("Yesol", "Sapozhnikov", , "yesols@uidaho.edu", role = c("aut")),
+    person("Craig", "Miller", , "crmiller@uidaho.edu", role = c("aut")))
+Maintainer: The package maintainer <chenangnon@gmail.com>
+Description: Multistage binomial regression for modelling binomial dependent variables resulting from multistep data generation processes: the success probability of the target event results from many individual stages, each modelled with a separate linear predictor.
+    This assumes multiplicative absolute risk between stages, and the common assumption of multiplicative odds (between independent variables) within each stage.
+    Bias-reduced estimation based on Jeffreys prior is provided in addition to maximum likelihood estimation. The fitting function also properly handles predictors prone to measurement errors.
+License: GPL (>= 3)
+Encoding: UTF-8
+Depends: R (>= 4.0.2)
+RdMacros: Rdpack
+Imports: Rdpack, methods, boot, parallel,
+   RcppParallel, grDevices, graphics, lattice
+Suggests: 
+    sandwich,
+    testthat (>= 3.0.0)
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Date: 2024-12-15
+NeedsCompilation: no
+LazyData: true
+Author: Chenangnon Tovissode [aut, cre],
+  Yesol Sapozhnikov [aut], Craig Miller [aut]
