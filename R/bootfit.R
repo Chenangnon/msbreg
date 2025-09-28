@@ -1,0 +1,341 @@
+# https://cran.r-project.org/doc/manuals/R-exts.html#Adding-new-generics
+#' Bootstrap a Model Fit
+#'
+#' Bootstrapping a model fit to obtain the bootstrap distribution of
+#' statistics such as parameter estimates, standard errors, log-likelihood,
+#' deviance, or any user-defined statistic.
+# The method for class 'lm' also handles the class 'glm'
+# ('glm' objects inherit from class 'lm').
+#'
+#' @param object either a model fit object of a class with a
+#'  \link[stats]{getCall} method (or with a \code{$call} component),
+#'  or an \code{R} model fit object of a class with a dedicated
+#' \code{bootfit} method.
+#' For the default setting, the class of \code{object} should also have a
+#' \link[stats]{coef} method (or \code{object} should have a
+#' \code{$coefficients} component).
+#'
+#' @param coefficients numeric vector, model parameters to generate data
+#' for Monte Carlo experiments, also known as parametric bootstrap (when
+#' \code{sim = 'parametric'}).
+#' The default is the \code{$coefficients} component of \code{object}.
+#'
+#' @param basic.stats character vector indicating basic (pre-defined)
+#' statistics to include in the set of bootstrapped statistics. Currently,
+#' \code{basic.stats} can include any or many of:
+#'
+#' \itemize{
+#' \item "\code{coef}" to include \code{$coefficients} component (or
+#' the result from \code{coef(object)}) of an object of the same shape
+#' as \code{object};
+#' \item "\code{logLik}" to include the \code{$logLik} (or the result
+#' from \code{logLik(object)}) of an object of the same shape as \code{object});
+#' \item "\code{deviance}" to include the \code{$deviance} component (or
+#' the result from \code{deviance(object)}) of an object of the same shape
+#' as \code{object});
+#' \item "\code{null.deviance}" to include the \code{$deviance} component
+#' of an object of the same shape as \code{object});
+#' \item "\code{all}" to include all of the above elements;
+#' }
+#'
+#' The default (\code{basic.stats = NULL}) means no basic statistics if a
+#' \code{sup.stats} function is supplied, and all the above pre-defined
+#' statistics otherwise (that is when \code{sup.stats = NULL},
+#' the default is equivalent to \code{basic.stats = 'all'}).
+#'
+#' @param sup.stats a function (or a character string naming a function)
+#' which takes a fitted model of the same shape as \code{object} (that
+#' is, resulting from a call similar to the one that generated  \code{object})
+#' and returns a vector of statistic(s) of interest, in addition to any
+#' pre-defined statistic specified through \code{basic.stats}. Defaults
+#' to \code{sup.stats = NULL}
+#' (equivalent to \code{sup.stats = function(x, ...) NULL}).
+#'
+#' @param sup.args (list of) supplemental argument(s) for the function
+#' \code{sup.stats}. If supplied (and not \code{NULL}), \code{sup.args}
+#' is passed as a second argument to \code{sup.stats} (an object of the
+#' same shape as \code{object} being the first argument).
+#'
+#' @param R numeric, the number of bootstrap replicates.
+#' See \link[boot]{boot} for details on the specification of
+#' *importance resampling* via a vector \code{R}.
+## Some methods may accept \code{R = NULL} to
+## force a jackknife approximation to the bootstrap.
+#'
+#' @param seed a single value (random seed), interpreted as an integer,
+#' or \code{NULL}. It is passed to \link{set.seed} when not \code{NULL}.
+#'
+#' @param sim character, a string indicating the type of simulation
+#' required.
+#'
+#' For the default method and the method for class 'lm', possible values
+#' include \code{"ordinary"} (the default value), \code{"parametric"},
+#' \code{"balanced"}, \code{"permutation"}, and \code{"antithetic"}.
+#' Note that the option \code{sim = "parametric"} is available only
+#' when \code{object} is of a class with a \link[stats]{simulate}
+#' method (since the details for parametric simulations are model
+#' specific).
+#' Specifying \code{sim = "parametric"} for an object without a
+#' \link[stats]{simulate} method is an error.
+#'
+#' @param stype,simple,parallel,ncpus,cl arguments
+#' passed to \link[boot]{boot} when specified (see documentation therein).
+#'
+#' @param yname character indicating the name of the response variable
+#' in the dataset used to fit the model in \code{object}.
+#' Only relevant (and used) when \code{sim = 'parametric'}.
+#'
+#' @param ... further arguments passed to or from other methods.
+#' The default method and the method for objects inheriting from class
+#' 'lm' accept the \code{strata}, \code{L}, \code{m}, and \code{weights}
+#' which are passed to \link[boot]{boot} (see documentation therein).
+#'
+#' @details
+#' The function \code{bootfit} is generic and methods should be written for
+#' \code{object}s of a specific class, with appropriate additional arguments
+#' (\code{...}).
+#' The default method simply wraps \link[boot]{boot} and is
+#' designed to handle most traditional model fit objects in \code{R}.
+#' The requirements for the default method to work are:
+#'
+#' \itemize{
+#' \item \code{object} must include a \code{$call} component or inherit
+#' from a class with a \link[stats]{getCall} method; and
+#'
+#' \item either \code{object} or \code{object$call} must also includes a
+#' \code{data} component which should be the data used for the original
+#' model fit.
+#' }
+#'
+#' These conditions hold for most basic model fits such as "\link[stats]{lm}",
+#' "\link[stats]{glm}", "\link[stats]{nls}", but also advanced model fits such
+#' as "\link[lme4]{lmer}", "\link[lme4]{nlmer}" and "\link[ordinal]{clmm}".
+#' The default method performs *non-parametric* bootstrapping based
+#' on \code{R} resamples each of the same size \code{nobs} of the
+#' original dataset.
+#'
+#' The function \code{sup.stats} extracts additional quantities
+#' of interest from a model fit. The default (\code{sup.stats = NULL})
+#' requires that \code{object} has a \code{$coefficients} component, or
+#' is of a class with a \link[stats]{coef} method (this condition
+#' again holds for most basic as well as advanced model fits).
+#'
+#' *For the default method, specifying* \code{sim = }**"parametric"**
+#' *for an object without a* \link[stats]{simulate} method
+#' *results into an* **error**.
+#'
+#' For the default setting where \code{sup.stats = NULL} and
+#' \code{basic.stats = NULL}, the *bootstrapped statistics*
+#' include the \code{$coefficients} component of \code{object}
+#' (or \code{coef(object)} when applicable). If available,
+#' the \code{$logLik}, \code{$deviance} and \code{$null.deviance}
+#' components of \code{object} are also included (if either of
+#' \code{object$logLik} or \code{object$deviance} is \code{NULL},
+#' \code{deviance(object)} or \code{logLik(object)} is attempted).
+#' The default number of bootstrapped statistics is between the number
+#' \eqn{p} of coefficients in the fit \code{object}, and \eqn{p + 3},
+#' the exact number depending on which ones of \code{logLik},
+#' \code{deviance} and \code{null.deviance} statistics can be extracted
+#' from \code{object}.
+#'
+#' For the default method, the argument \code{seed} is used to set the
+#' \code{.Random.seed} of \code{R}, i.e. the random number generator (RNG)
+#' state for random number generation. Although bootstrapping generates and
+#' uses random numbers, a call to the function will not alter the
+#' RGN state if \code{.Random.seed} exists in the \code{.GlobalEnv}.
+#' If \code{.Random.seed} did not exist, it is first created by calling
+#' \code{runif(1)}. In either case, the RGN state (i.e. \code{.Random.seed})
+#' right before bootstrapping is saved  and restored after bootstrapping.
+#'
+#' @aliases bootfit
+#' @aliases bootfit.default
+#' @export bootfit
+#'
+#' @importFrom boot boot
+#' @importFrom boot boot.ci
+#' @import methods
+#'
+#' @return An object inheriting from class \code{"boot"} (as defined
+#' from package \code{boot}) which has \link{print} and \link{plot}
+#' methods for succinct display. The matrix of bootstrapped statistics
+#' can be assessed in the \code{$t} component of the returned object.
+#' See \link[boot]{boot} for details on the \code{"boot"} class.
+#'
+#' For the default method as well as for the method for "lm" and "glm" classes,
+#' when \code{sup.stats = NULL}, the returned object has an additional
+#' component \code{$stats.names} giving the names of the bootstrapped
+#' statistics. For instance, since "\link[stats]{glm}" class objects
+#' have a \link[stats]{logLik} method, and components \code{$null.deviance}
+#' and \code{$deviance}, the number of bootstrapped statistics (number
+#' of columns of the \code{$t} component) is \eqn{p + 3} where \eqn{p}
+#' is the number of coefficients in the original "\link[stats]{glm}" fit.
+#'
+#' The output may have other components or attributes, or inherit
+#' from additional classes, depending on the method used: see the
+#' appropriate documentation.
+#'
+#' @seealso \link[msbreg]{bootfit.msbm} to bootstrap \code{"msbm"}
+#' model fits (typically returned by \link[msbreg]{msbreg}).
+#'
+#' @examples
+#' ##* Infertility data
+#' data("infert", package = "datasets")
+#' require(boot)
+#' require(msbreg)
+#'
+#' ##* Logistic regression fit to the infert data
+#' GLMres <- glm (case ~ spontaneous, data = infert,
+#'                family = binomial())
+#'
+#' summary(GLMres)
+#'
+#' ##* Bootstrap the fit (the default, non-parametric)
+#' bfit <- bootfit (GLMres)
+#' bfit
+#'
+#' # names of the bootstrapped statistics
+#' bfit$stats.names
+#'
+#' ##* Use parametric bootstrap
+#' # Add standard error estimates to the bootstrapped statistics
+#' # A function to return the standard error estimates
+#' sefunc <- function (x) {
+#'  sx <- summary(x)
+#'  se <- sx$coefficients[,2]
+#'  names(se) <- paste0("se.", names(se))
+#'  return(se)
+#' }
+#'
+#' bfit <- bootfit (GLMres, basic.stats = "all",
+#'                  sup.stats = sefunc,
+#'                  sim = "parametric")
+#' bfit
+#'
+#' # names of the bootstrapped statistics
+#' bfit$stats.names
+#'
+#' ##* Build bootstrap percentile confidence interval for
+#' #   the slope for 'spontaneous'
+#' boot.ci (bfit, index = 2, conf = 0.95, type = "perc")
+#'
+#' ##* From the above shown 'summary(GLMres)' results
+#' #  the slope for 'spontaneous' is significant (non-zero)
+#' # based on the wald test (5% nominal level).
+#' # The bootstrap percentile confidence interval also
+#' # indicate significance. We can test the same
+#' # hypothesis using a likelihood ratio test:
+#' # This is achieved by comparing residual deviance to null deviance:
+#' anova(GLMres)
+#'
+#' #* Bootstrap the likelihood ratio statistic (difference in deviance values)
+#' # Null model fit
+#' nullfit <- glm (case ~ 1, data = infert, family = binomial())
+#'
+#' # Bootstrap the fit, using data from the null model
+#' bfit1 <- bootfit (GLMres, coefficients = c(nullfit$coefficients, 0),
+#'                   sim = "parametric")
+#'
+#' #* Likelihood ratio statistic (difference in deviance values)
+#' LRstat <- bfit1$t[,"null.deviance"] - bfit1$t[,"deviance"]
+#'
+#' #* Compare the simulated empirical distribution (black dots)
+#' #  to the theoretical distribution (Chi-squared, red curve)
+#' #  used by the 'anova' test
+#' plot(ecdf(LRstat), main = "")
+#' curve(pchisq(x, df = 1, lower.tail = TRUE), col = "red", add = TRUE)
+#'
+#' # Estimate of p-value from the 999 bootstrap replicates
+#' r <- sum(bfit1$t[,"null.deviance"] - bfit1$t[,"deviance"] >
+#'          nullfit$deviance - GLMres$deviance)
+#' (r + 1) / (1 + bfit1$R)
+#'
+# detach(package:msbreg)
+# detach(package:boot)
+#'
+#' @importFrom stats getCall
+#' @importFrom stats deviance
+#' @importFrom stats coef
+#' @importFrom stats logLik
+#' @importFrom boot boot
+bootfit <- function (object, ...) {
+  UseMethod("bootfit")
+}
+
+#
+# @rdname bootfit
+# @exportMethod bootfit
+# @export bootfit
+bootfit.default <- function (object, ...) {
+  #* Matched call and computations
+  mcall <- match.call()
+
+  if (inherits(object, "lm") | inherits(object, "glm")) {
+    out <- bootfit.lm (object, ...)
+  }
+  else {
+    out <- bootfit_default_core (object = object, ...,
+                                 envCall = parent.frame())
+  }
+
+  #* Update the 'call' component
+  out$boot.call <- out$call
+  out$call <- mcall
+
+  return(out)
+}
+
+setGeneric(name = 'bootfit',
+           def = bootfit.default)
+
+#' @rdname bootfit
+#' @exportS3Method msbreg::bootfit
+bootfit.lm <-
+  function (object,
+            coefficients = object$coefficients,
+            basic.stats = NULL,
+            sup.stats = NULL, sup.args = NULL, R = 999, seed = NULL,
+            sim = c("ordinary", "parametric", "balanced", "permutation", "antithetic"),
+            stype = c("i", "f", "w"), yname, simple = FALSE,
+            parallel = c("no", "multicore", "snow"),
+            ncpus = getOption("boot.ncpus", 1L),
+            cl = NULL, ...) {
+
+    #* Matched call and computations
+    mcall <- match.call()
+
+    if (identical(sim[1], "parametric")) {
+      if (length(coefficients) == length(object$coefficients)) {
+        if (!all(coefficients == object$coefficients)) {
+          mmatrix <- model.matrix(object)
+          if(NCOL(mmatrix) != length(coefficients)) {
+            stop(paste0("argument 'coefficients' of wrong length: expected = ",
+                        NCOL(mmatrix), ", observed = ", length(coefficients)))
+          }
+          object$fitted.values <- c(mmatrix %*% coefficients)
+          if (inherits(object, "glm")) {
+            object$fitted.values <- object$family$linkinv (object$fitted.values)
+          }
+        }
+      }
+      else {
+        stop(paste0("argument 'coefficients'of wrong length: expected = ",
+                    length(object$coefficients), ", observed = ", length(coefficients)))
+      }
+    }
+
+    out <- bootfit_default_core (object = object, basic.stats = basic.stats,
+                                 sup.stats = sup.stats, sup.args = sup.args, R = R,
+                                 seed = seed, sim = sim, stype = stype, yname = yname,
+                                 simple = simple, parallel = parallel, ncpus = ncpus,
+                                 cl = cl, ..., envCall = parent.frame())
+
+    #* Update the 'call' component
+    out$boot.call <- out$call
+    out$call <- mcall
+
+    return(out)
+  }
+
+# @rdname bootfit
+#' @exportS3Method msbreg::bootfit
+bootfit.glm <- bootfit.lm
