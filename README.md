@@ -5,27 +5,23 @@ This repository provides supplementary material to the paper: ``A multistage bin
 
 MSB regression is suited for modelling binomial dependent variables resulting from multistep data generation processes: the success probability of the target event results from many individual stages, each modelled with a separate linear predictor. This assumes multiplicative absolute risk between stages, and the common assumption of multiplicative odds (between independent variables) within each stage. Bias-reduced estimation based on Jeffreys prior is provided in addition to maximum likelihood estimation. The fitting function also properly handles predictors prone to measurement errors.
 
-The zip file ``msbreg_0.1.0.tar.gz`` is the source R package (``msbreg``) for MSB models.
-This package requires R (>= 4.0.2) and depend on a few other R packages. To install all dependencies:
+You can install the development version of `msbreg` from GitHub as follows:
 
 ``` r
 # Install devtools if not yet
 if(!require("devtools")) install.packages("devtools")
 
-# Install dependencies for wavefinder
+# Install dependencies for msbreg
 install.packages(c('Rdpack', 'methods', 'boot', 'parallel', 'RcppParallel', 'grDevices', 'graphics', 'lattice'), dependencies = TRUE)
 ```
 
-To install ``msbreg`` on your computer, first download the files ``msbreg_0.1.0.tar.gz`` from the msbreg repository.
-
-Then, run the following line with ``~`` replaced by the path to the directory where ``msbreg_0.1.0.tar.gz``was saved on your computer.
-
 ``` r
 # Install the library mrbglm
-install.packages("~/msbreg_0.1.0.tar.gz", repos = NULL, type = "source")
+devtools::install_github("Chenangnon/msbreg")
 ```
 
-##** Infertility data
+# Examples
+#** Infertility data
 ``` r
 data ("infert", package = "datasets")
 
