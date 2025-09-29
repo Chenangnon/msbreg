@@ -50,7 +50,9 @@ summary (MSBres0)
 #* (by the larger AIC as compared with the simple GLM).
 
 #* This is in line with the profile likelihood plot:
+```r
 profilelambda(MSBres0, plotit = TRUE, lambda = seq(0.5, 1, .01))
+```
 
 #* We can use a penalized likelihood estimation to make the likelihood surface less flat (default procedure)
 ``` r
