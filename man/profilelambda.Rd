@@ -115,6 +115,7 @@ MSBres <- msbreg (y/Total ~ x1 + offset(off1) | x2,
 
 summary (MSBres)
 
+\dontrun{
 # Compute the profile log-likelihood and
 # plot with the default 95\% confidence interval
 PL <- profilelambda(MSBres, plotit = TRUE,
@@ -123,5 +124,6 @@ PL <- profilelambda(MSBres, plotit = TRUE,
 # Show a 90\% confidence interval
 plot(PL, ci.level = .9,
      ylab = 'Penalized log-likelihood')
+}
 
 }

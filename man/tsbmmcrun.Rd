@@ -3,6 +3,7 @@
 \docType{data}
 \name{tsbmmcrun}
 \alias{tsbmmcrun}
+\alias{tsbmmcrun1}
 \title{Simulations Results}
 \format{
 An object of class \code{"msbm.sim"}.
@@ -40,6 +41,9 @@ summary (msbfit)
 #Run nsim = 1000 MC simulations: this takes about 20 minutes
 
 tsbmmcrun <- MCmsbm (msbm = msbfit, theta = c(3, -1, 3, -1, 1.6449), nsim = 1000, seed = 1)
+
+The object \code{tsbmmcrun1} is a twin of \code{tsbmmcrun} with
+\code{unit.lambda = TRUE} in the call to \code{msbreg}.
 }
 \examples{
 data(tsbmmcrun)
