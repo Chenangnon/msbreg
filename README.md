@@ -224,4 +224,3 @@ summary (MSBfit)
 ```
 #* Compare the coefficient estimates to the true
 #* coefficients: (3, -1, 0, 0.5, 3, -1, -0.5, 1.7)
-
