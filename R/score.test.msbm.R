@@ -14,12 +14,29 @@
 #' \code{trace} for verbose, and \code{ncores} for the number of cores for
 #' parallel computing.
 #'
-#' @param which character or integer indicating which parameters are targeted.
-#' Defaults to \code{which = NULL}, corresponding to the asymptote parameter
-#' \eqn{\lambda} of the Multistage Binomial (MSB) model.
-#' No alternative is currently available.
+#' @param which integer vector, which score types statistic of a
+#' \code{score.test} object should be extracted?
+#' The default selects score statistics based on the Fisher information matrix.
+#' Do not change it unless you are sure about what you are doing.
 #'
-#' @param null.values numeric vector of null values of target parameters.
+# @param which character or integer indicating which parameters are targeted.
+# Defaults to \code{which = NULL}, corresponding to the asymptote parameter
+# \eqn{\lambda} of the Multistage Binomial (MSB) model.
+# No alternative is currently available.
+#
+# @param null.values numeric vector of null values of target parameters.
+#'
+#' @param scope defines the range of alternative models to be examined.
+#' This is used only when \code{...} does not include any model which nests
+#' \code{object}.
+#' This should be either a single formula, or a list containing components
+#' \code{upper} and \code{lower}, both formulae.
+#' See the details for how to specify the formulae and how they are used.
+#'
+#' @param steps the maximum number of null models to be considered.
+#' The default is 1000 (essentially as many as required).
+#' It is typically used to stop the process early when \code{...} is empty
+#' and \code{scope} is a big model.
 #'
 #' @param type character, type of score statistic to compute. The default
 #' (\code{type = "expected"}) uses the Fisher information matrix.
@@ -28,6 +45,18 @@
 #'
 #' @param penalty logical, should the test account for the penalty when a
 #' penalized fitting criterion was used for object?
+#'
+#' @param identity.link.lambda should the identity link function be considered
+#' for the asymptote parameter \eqn{\lambda} in a MSB model?
+#' The default (\code{identity.link.lambda = FALSE}) uses a \code{log} link.
+#'
+#' Note that the link used by fitter function is generally a binomial link
+#' function which represents the \eqn{\lambda = 1} as \eqn{\infty} and
+#' results into an identically zero score component for \eqn{\lambda} and
+#' thereby a singular Fisher information matrix.
+#' A different parametrization is thus required/better for \eqn{\lambda} when
+#' performing any of the statistical trinity (score, likelihood ratio, and
+#' Wald tests).
 #'
 #' @param side \code{NULL} \code{NA}, \code{-1}, or \code{1} indicating if
 #' one-sided derivatives should be used when numerical derivative are required
@@ -61,11 +90,13 @@
 #' The \code{print} method for \code{"score.test"} class objects calls
 #' \code{scoretable}.
 #'
+#' The routine \code{extractscores} returns a vector for a \code{score.test}
+#' input \code{object} and a matrix when \code{object} is a \code{score.list}.
+#'
 #' @aliases score.test.msbm
 #'
 #' @seealso See \link[msbreg]{profile.msbm} for computing log-likelihood profiles
 #' for MSB model fits.
-#'
 #'
 #'
 # @export score.test.msbm

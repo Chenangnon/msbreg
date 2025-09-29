@@ -43,26 +43,26 @@
 #' @param ... further arguments passed to or from other methods.
 #' Currently not used.
 #'
-#' @usage
-#'
-#' test.separation (object, ...)
-#'
-#' ## S3 method for class 'formula'
-#' test.separation (object, binary = TRUE, data = environment(formula(object)),
-#'                  weights, subset, na.action = stats::na.omit, offset = NULL,
-#'                  contrasts = NULL, sanitize = TRUE, epsilon = 1e-04,
-#'                  method = "iterative_rectifier", maxit = 500, ...)
-#'
-#' ## S3 method for class 'glm'
-#' test.separation (object, data = object$data, subset = NULL,
-#'                  na.action = stats::na.omit, sanitize = TRUE,
-#'                  epsilon = 1e-04, method = "iterative_rectifier",
-#'                  maxit = 500, ...)
-#'
-#' ## Routine for prepared response vector 'y' and design matrix 'x'
-#' test.sep (y, x, weights = 1, offset = 0, binary = TRUE, epsilon = 1e-08,
-#'           method = "iterative_rectifier", maxit = 500, ...)
-#'
+# @usage
+#
+# test.separation (object, ...)
+#
+# ## S3 method for class 'formula'
+# test.separation (object, binary = TRUE, data = environment(formula(object)),
+#                  weights, subset, na.action = stats::na.omit, offset = NULL,
+#                  contrasts = NULL, sanitize = TRUE, epsilon = 1e-04,
+#                  method = "iterative_rectifier", maxit = 500, ...)
+#
+# ## S3 method for class 'glm'
+# test.separation (object, data = object$data, subset = NULL,
+#                  na.action = stats::na.omit, sanitize = TRUE,
+#                  epsilon = 1e-04, method = "iterative_rectifier",
+#                  maxit = 500, ...)
+#
+# ## Routine for prepared response vector 'y' and design matrix 'x'
+# test.sep (y, x, weights = 1, offset = 0, binary = TRUE, epsilon = 1e-08,
+#           method = "iterative_rectifier", maxit = 500, ...)
+#
 #' @details
 #' \code{test.separation} is a generic function with a default method that
 #' handles a 'numeric' vector \code{object} supplied with a numeric matrix \code{x}.
@@ -226,7 +226,7 @@ test.separation.default <- function(object, ...) {
 setGeneric(name = "test.separation",
            def = test.separation.default)
 
-# @rdname test.separation
+#' @rdname test.separation
 #' @exportS3Method msbreg::test.separation
 test.separation.formula <- function (object, binary = TRUE, data = environment(formula),
                                      weights, subset, na.action = stats::na.omit, offset = NULL,
@@ -255,7 +255,7 @@ test.separation.formula <- function (object, binary = TRUE, data = environment(f
   return(out)
 }
 
-# @rdname test.separation
+#' @rdname test.separation
 #' @exportS3Method msbreg::test.separation
 test.separation.glm <- function (object, data = object$data, subset = NULL,
                                  na.action = stats::na.omit,

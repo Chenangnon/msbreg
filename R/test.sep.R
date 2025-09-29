@@ -1,5 +1,5 @@
 
-# @rdname test.separation
+#' @rdname test.separation
 test.sep <- function (y, x,
                       weights = 1,# CURRENTLY ONLY USED when binary = TRUE for logit-Poisson transformation
                       offset = 0, # CURRENTLY NOT USED BY THE IMPLEMENTED ALGORITHM

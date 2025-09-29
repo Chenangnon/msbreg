@@ -29,6 +29,9 @@
 #'
 #' tsbmmcrun <- MCmsbm (msbm = msbfit, theta = c(3, -1, 3, -1, 1.6449), nsim = 1000, seed = 1)
 #'
+#' The object \code{tsbmmcrun1} is a twin of \code{tsbmmcrun} with
+#' \code{unit.lambda = TRUE} in the call to \code{msbreg}.
+#'
 #' @docType data
 #'
 #' @usage data(tsbmmcrun)
@@ -40,6 +43,8 @@
 #' @keywords datasets
 #'
 #' @source Simulated
+#'
+#' @aliases tsbmmcrun1
 #'
 #' @author Chenangnon Tovissode \email{ctovissode@@uidaho.edu}
 # @references \url{blah_blah.com}

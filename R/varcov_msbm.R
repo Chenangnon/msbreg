@@ -259,7 +259,16 @@ msbm_varcov <- function (object, coefficients = object$coefficients,
     }
     else {
       if (fisher.matrix) {
-        infomat <- mutation$EFinfo
+        infomat <- object$fisher
+
+        if (is.null(infomat)) {
+          mutation <- mutate.params (coefficients,
+                                     frame = model.frame.msbm (object),
+                                     link = link(object),
+                                     information = TRUE,
+                                     observed = FALSE)
+          infomat <- mutation$EFinfo
+        }
       }
       else {
         frame <- object$frame %||% model.frame(object)

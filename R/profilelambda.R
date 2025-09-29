@@ -104,6 +104,7 @@
 #'
 #' summary (MSBres)
 #'
+#' \dontrun{
 #' # Compute the profile log-likelihood and
 #' # plot with the default 95% confidence interval
 #' PL <- profilelambda(MSBres, plotit = TRUE,
@@ -112,6 +113,7 @@
 #' # Show a 90% confidence interval
 #' plot(PL, ci.level = .9,
 #'      ylab = 'Penalized log-likelihood')
+#' }
 #'
 profilelambda <- function(object, lambda = NULL, step = 0.01, eps = 1e-04,
                           neg.criterion = TRUE, plotit = FALSE, interp = NULL,
@@ -242,6 +244,8 @@ profilelambda <- function(object, lambda = NULL, step = 0.01, eps = 1e-04,
   }
 }
 
+#' @importFrom grDevices dev.flush
+#' @importFrom graphics par
 #' @exportS3Method base::plot
 plot.profile.lambda <- function (x, interp = NULL, ci.level = 0.95,
                                  xlab = expression(lambda),

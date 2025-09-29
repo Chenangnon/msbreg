@@ -31,8 +31,8 @@
 #'
 #' All the remaining arguments are used only when \code{action = "model.frame"}.
 #'
-#' @param formula.,input.me.,stage.me.,alpha.formula.,lambda.formula. inputs
-#' indicating adjustment to the corresponding argument of the original fit in
+#' @param formula.,input.me.,stage.me.,alpha.formula.,lambda.formula.,kappa.formula. inputs
+#' indicating adjustments to the corresponding argument of the original fit in
 #' \code{object} (for instance, \code{formula.} is used to update the argument
 #' \code{formula} of \link[msbreg]{msbreg}, \code{input.me.} is used for
 #' \code{input.me} when provided, ...).

@@ -1,5 +1,5 @@
 
-#' @rdname score.test
+#' @rdname score.test.msbm
 #' @export extractscores
 extractscores <- function(object, which = c(1,3,5,6), ...) {
   out <- sapply(object,

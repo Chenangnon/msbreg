@@ -513,8 +513,10 @@
 #' #* But adding the additional asymptote parameter does not seem justified
 #' #* (by the larger AIC as compared with the simple GLM).
 #'
+#' \dontrun{
 #' #* This is in line with the profile likelihood plot:
 #' profilelambda(MSBres0, plotit = TRUE, lambda = seq(0.5, 1, .01))
+#' }
 #'
 #' #* We can use a penalized likelihood estimation to make the
 #' # likelihood surface less flat (default procedure)
@@ -527,7 +529,9 @@
 #'
 #' #* The penalized ML estimate of lambda is 1, on parameter space boundary
 #' #* (as can be seen on the profile likelihood plot)
+#' \dontrun{
 #' profilelambda(MSBres, plotit = TRUE, lambda = seq(0.6, 1, .01))
+#' }
 #'
 #' #* Use the score statistic to test H0: lambda = 1 versus H1: 0 < lambda < 1.
 #' Sctest <- score.test(MSBres)
